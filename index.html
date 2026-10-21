@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>בית למימון | מחזור משכנתא</title>
+  <link rel="icon" href="logo.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #2b1f63;
+      --navy-2: #3d2f86;
+      --sky: #93c0de;
+      --sky-soft: #eaf3fa;
+      --ink: #1b1640;
+      --muted: #6b6889;
+      --line: #e4e6f0;
+      --field: #f6f7fb;
+    }
+    * { box-sizing: border-box; }
+    html, body { overflow-x: hidden; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Heebo", Arial, sans-serif;
+      color: var(--ink);
+      background: #f3f6fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 16px;
+      position: relative;
+    }
+    /* כתמי צבע רכים ברקע */
+    .bg { position: fixed; inset: 0; overflow: hidden; z-index: -1; pointer-events: none; }
+    .bg span { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .55; }
+    .bg span:nth-child(1) { width: 520px; height: 520px; background: var(--sky); top: -160px; right: -140px; }
+    .bg span:nth-child(2) { width: 460px; height: 460px; background: #c9c2f0; bottom: -180px; left: -120px; }
+    .bg span:nth-child(3) { width: 300px; height: 300px; background: #d6ebf7; top: 40%; left: 30%; }
+
+    .card {
+      width: 100%;
+      max-width: 620px;
+      background: #fff;
+      border-radius: 28px;
+      box-shadow: 0 1px 2px rgba(27, 22, 64, .04), 0 24px 60px -12px rgba(43, 31, 99, .22);
+      overflow: hidden;
+    }
+    .card-head {
+      padding: 36px 40px 28px;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+    /* חיתוך השוליים הלבנים של קובץ הלוגו */
+    .logo-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      aspect-ratio: 6 / 1;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .logo-wrap img {
+      position: absolute;
+      width: 116.3%;
+      left: -8.1%;
+      top: -60%;
+    }
+    .card-body { padding: 32px 40px 40px; }
+    h1 { font-size: 32px; font-weight: 800; margin: 0 0 6px; color: var(--navy); letter-spacing: -.5px; }
+    .sub { margin: 0 0 28px; color: var(--muted); font-size: 16px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 16px; }
+    .full { grid-column: 1 / -1; }
+    label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 7px; color: var(--ink); }
+    label .req { color: var(--navy-2); }
+    input, select {
+      width: 100%;
+      height: 52px;
+      padding: 0 16px;
+      font: inherit;
+      font-size: 16px;
+      color: var(--ink);
+      border: 1.5px solid transparent;
+      border-radius: 14px;
+      background: var(--field);
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    input:hover, select:hover { background: #eff1f8; }
+    input:focus, select:focus {
+      outline: none;
+      background: #fff;
+      border-color: var(--navy-2);
+      box-shadow: 0 0 0 4px rgba(147, 192, 222, .35);
+    }
+    input.invalid, select.invalid { border-color: #e05c5c; background: #fff6f6; }
+    .ltr { direction: ltr; text-align: right; }
+    select {
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%232b1f63' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: left 18px center;
+    }
+    select:invalid { color: var(--muted); }
+    option { color: var(--ink); }
+    .botcheck { display: none; }
+
+    button {
+      width: 100%;
+      height: 56px;
+      margin-top: 26px;
+      border: none;
+      border-radius: 14px;
+      background: var(--navy);
+      color: #fff;
+      font: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 24px -8px rgba(43, 31, 99, .55);
+      transition: background .2s, transform .15s, box-shadow .2s;
+    }
+    button:hover { background: var(--navy-2); transform: translateY(-1px); box-shadow: 0 14px 28px -8px rgba(43, 31, 99, .6); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: .7; cursor: wait; transform: none; }
+    button svg { transition: transform .2s; }
+    button:hover svg { transform: translateX(-4px); }
+    .spinner {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .msg { text-align: center; margin-top: 14px; font-weight: 500; font-size: 15px; min-height: 1.4em; color: #c94040; }
+    .secure {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      margin-top: 6px; color: var(--muted); font-size: 13px;
+    }
+
+    .success { display: none; text-align: center; padding: 24px 0 8px; animation: pop .4s ease; }
+    .success .check {
+      width: 76px; height: 76px; margin: 0 auto 20px; border-radius: 50%;
+      background: var(--sky-soft); color: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .success h2 { margin: 0 0 8px; color: var(--navy); font-size: 26px; }
+    .success p { color: var(--muted); margin: 0; font-size: 16px; }
+    @keyframes pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+
+    @media (max-width: 560px) {
+      body { padding: 20px 12px; align-items: flex-start; }
+      .card { border-radius: 22px; }
+      .card-head { padding: 26px 20px 20px; }
+      .card-body { padding: 24px 20px 28px; }
+      .grid { grid-template-columns: 1fr; }
+      h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <main class="card">
+    <div class="card-head">
+      <div class="logo-wrap">
+        <img src="logo.jpg" alt="בית למימון - משכנתא בשפה שלך" />
+      </div>
+    </div>
+
+    <div class="card-body">
+      <form id="form" novalidate>
+        <h1>מחזור משכנתא</h1>
+        <p class="sub">השאירו פרטים ונחזור אליכם בהקדם</p>
+
+        <div class="grid">
+          <div>
+            <label for="firstName">שם פרטי <span class="req">*</span></label>
+            <input id="firstName" name="firstName" required autocomplete="given-name" />
+          </div>
+          <div>
+            <label for="lastName">שם משפחה <span class="req">*</span></label>
+            <input id="lastName" name="lastName" required autocomplete="family-name" />
+          </div>
+          <div>
+            <label for="phone">טלפון נייד <span class="req">*</span></label>
+            <input id="phone" name="phone" type="tel" class="ltr" required inputmode="tel" autocomplete="tel" placeholder="050-0000000" />
+          </div>
+          <div>
+            <label for="email">כתובת מייל <span class="req">*</span></label>
+            <input id="email" name="email" type="email" class="ltr" required autocomplete="email" placeholder="name@example.com" />
+          </div>
+          <div class="full">
+            <label for="bank">הבנק בו מתנהלת המשכנתא <span class="req">*</span></label>
+            <select id="bank" name="bank" required>
+              <option value="" selected disabled>בחרו בנק</option>
+              <option>מזרחי טפחות</option>
+              <option>בנק הפועלים</option>
+              <option>בנק דיסקונט</option>
+              <option>בנק לאומי</option>
+              <option>הבנק הבינלאומי</option>
+              <option>בנק מרכנתיל</option>
+              <option>בנק ירושלים</option>
+              <option>אחר</option>
+            </select>
+          </div>
+        </div>
+
+        <input type="checkbox" class="botcheck" name="botcheck" tabindex="-1" autocomplete="off" />
+
+        <button type="submit" id="submit">
+          <span class="btn-text">שליחה</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        </button>
+        <div class="msg" id="msg" role="alert"></div>
+        <div class="secure">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          הפרטים שלכם נשמרים בדיסקרטיות
+        </div>
+      </form>
+
+      <div class="success" id="success">
+        <div class="check">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </div>
+        <h2>הפרטים נשלחו בהצלחה!</h2>
+        <p>תודה, נחזור אליכם בהקדם.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // המפתח שמתקבל במייל מ-web3forms.com
+    const ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
+
+    const form = document.getElementById("form");
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("submit");
+    const fields = ["firstName", "lastName", "phone", "email", "bank"].map((id) => document.getElementById(id));
+    const btnHTML = btn.innerHTML;
+
+    fields.forEach((f) => f.addEventListener("input", () => f.classList.remove("invalid")));
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+
+      const data = Object.fromEntries(new FormData(form));
+      const empty = fields.filter((f) => !f.value.trim());
+      empty.forEach((f) => f.classList.add("invalid"));
+      if (empty.length) {
+        msg.textContent = "נא למלא את כל השדות המסומנים בכוכבית";
+        empty[0].focus();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>';
+      try {
+        const res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: ACCESS_KEY,
+            subject: `ליד חדש - מחזור משכנתא: ${data.firstName} ${data.lastName}`,
+            from_name: "טופס מחזור משכנתא",
+            botcheck: form.botcheck.checked,
+            "שם פרטי": data.firstName,
+            "שם משפחה": data.lastName,
+            "טלפון נייד": data.phone,
+            "כתובת מייל": data.email,
+            "בנק המשכנתא": data.bank,
+            replyto: data.email,
+          }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.success) throw new Error("שגיאה בשליחה, נסו שוב");
+        form.style.display = "none";
+        document.getElementById("success").style.display = "block";
+      } catch (err) {
+        msg.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = btnHTML;
+      }
+    });
+  </script>
+</body>
+</html>
