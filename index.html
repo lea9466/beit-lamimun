@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>בית למימון | מחזור משכנתא</title>
+  <title>בית למימון | ייעוץ משכנתא</title>
   <link rel="icon" href="logo.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -97,6 +97,31 @@
     }
     input.invalid, select.invalid { border-color: #e05c5c; background: #fff6f6; }
     .ltr { direction: ltr; text-align: right; }
+
+    /* בחירה בין משכנתא חדשה למחזור */
+    .choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border: 0; padding: 0; margin: 0 0 6px; min-width: 0; }
+    .opt { position: relative; cursor: pointer; }
+    .opt input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+    .opt span {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      height: 60px;
+      border-radius: 14px;
+      background: var(--field);
+      border: 1.5px solid transparent;
+      font-size: 16px; font-weight: 600; color: var(--muted);
+      transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+    }
+    .opt span svg { flex-shrink: 0; }
+    .opt:hover span { background: #eff1f8; }
+    .opt input:checked + span {
+      background: #fff;
+      border-color: var(--navy);
+      color: var(--navy);
+      box-shadow: 0 6px 18px -8px rgba(43, 31, 99, .35);
+    }
+    .opt input:focus-visible + span { box-shadow: 0 0 0 4px rgba(147, 192, 222, .5); }
+    .choice.invalid .opt span { border-color: #e05c5c; background: #fff6f6; }
+    #bankField { animation: pop .3s ease; }
     select {
       appearance: none;
       cursor: pointer;
@@ -177,10 +202,26 @@
 
     <div class="card-body">
       <form id="form" novalidate>
-        <h1>מחזור משכנתא</h1>
+        <h1>ייעוץ משכנתא</h1>
         <p class="sub">השאירו פרטים ונחזור אליכם בהקדם</p>
 
         <div class="grid">
+          <fieldset class="full choice" id="typeChoice" aria-label="סוג הפנייה">
+            <label class="opt">
+              <input type="radio" name="type" value="משכנתא חדשה" />
+              <span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M12 13v5M9.5 15.5h5"/></svg>
+                משכנתא חדשה
+              </span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="type" value="מחזור משכנתא" />
+              <span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 20v-4h-4"/></svg>
+                מחזור משכנתא
+              </span>
+            </label>
+          </fieldset>
           <div>
             <label for="firstName">שם פרטי <span class="req">*</span></label>
             <input id="firstName" name="firstName" required autocomplete="given-name" />
@@ -197,7 +238,7 @@
             <label for="email">כתובת מייל <span class="req">*</span></label>
             <input id="email" name="email" type="email" class="ltr" required autocomplete="email" placeholder="name@example.com" />
           </div>
-          <div class="full">
+          <div class="full" id="bankField" hidden>
             <label for="bank">הבנק בו מתנהלת המשכנתא <span class="req">*</span></label>
             <select id="bank" name="bank" required>
               <option value="" selected disabled>בחרו בנק</option>
@@ -243,21 +284,40 @@
     const form = document.getElementById("form");
     const msg = document.getElementById("msg");
     const btn = document.getElementById("submit");
+    const typeChoice = document.getElementById("typeChoice");
+    const bankField = document.getElementById("bankField");
+    const bank = document.getElementById("bank");
     const fields = ["firstName", "lastName", "phone", "email", "bank"].map((id) => document.getElementById(id));
     const btnHTML = btn.innerHTML;
 
     fields.forEach((f) => f.addEventListener("input", () => f.classList.remove("invalid")));
+
+    // שדה הבנק מופיע רק במחזור משכנתא
+    form.querySelectorAll('input[name="type"]').forEach((r) =>
+      r.addEventListener("change", () => {
+        typeChoice.classList.remove("invalid");
+        const isRefi = form.type.value === "מחזור משכנתא";
+        bankField.hidden = !isRefi;
+        if (!isRefi) {
+          bank.value = "";
+          bank.classList.remove("invalid");
+        }
+      })
+    );
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       msg.textContent = "";
 
       const data = Object.fromEntries(new FormData(form));
-      const empty = fields.filter((f) => !f.value.trim());
+      const isRefi = data.type === "מחזור משכנתא";
+      const required = isRefi ? fields : fields.filter((f) => f !== bank);
+      const empty = required.filter((f) => !f.value.trim());
       empty.forEach((f) => f.classList.add("invalid"));
-      if (empty.length) {
-        msg.textContent = "נא למלא את כל השדות המסומנים בכוכבית";
-        empty[0].focus();
+      if (!data.type) typeChoice.classList.add("invalid");
+      if (!data.type || empty.length) {
+        msg.textContent = !data.type ? "נא לבחור משכנתא חדשה או מחזור משכנתא" : "נא למלא את כל השדות המסומנים בכוכבית";
+        (data.type ? empty[0] : form.type[0]).focus();
         return;
       }
 
@@ -269,14 +329,15 @@
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
             access_key: ACCESS_KEY,
-            subject: `ליד חדש - מחזור משכנתא: ${data.firstName} ${data.lastName}`,
-            from_name: "טופס מחזור משכנתא",
+            subject: `ליד חדש - ${data.type}: ${data.firstName} ${data.lastName}`,
+            from_name: "טופס ייעוץ משכנתא",
             botcheck: form.botcheck.checked,
+            "סוג הפנייה": data.type,
             "שם פרטי": data.firstName,
             "שם משפחה": data.lastName,
             "טלפון נייד": data.phone,
             "כתובת מייל": data.email,
-            "בנק המשכנתא": data.bank,
+            ...(isRefi && { "בנק המשכנתא": data.bank }),
             replyto: data.email,
           }),
         });
